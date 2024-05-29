@@ -127,6 +127,7 @@ def run_app2():
 if __name__ == '__main__':
     # 创建线程来运行两个应用
     t1 = threading.Thread(target=run_app1)
+
     t2 = threading.Thread(target=run_app2)
     
     # 启动线程
