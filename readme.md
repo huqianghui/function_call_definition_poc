@@ -6,7 +6,7 @@
 
    所有的functions 都放到 aigbb_functions 模块下
 
-   每个方法都变成一个built-in全局方法。
+   通过import * 的方式，每个方法都默认变成引入。
 3. 构建新的kernel ，安装上面两步的依赖和模块
 
    1. 构建一个新的环境，避免干扰：
