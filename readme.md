@@ -21,3 +21,7 @@
 6. 启动服务，对外restful API 提供function call的能力 python 脚本执行能力
 
    1. 在启动服务的过程中，选择对应的最新的内核
+7. 可以通过postman的json定义文件，查看两个API的定义。
+
+   1. 通过register来添加function
+   2. 通过execute来执行代码
