@@ -1,0 +1,7 @@
+ipykernel==6.29.4 
+jupyter==1.0.0
+Flask==3.0.3
+
+
+# extra-requirements.txt
+-r extra-requirements.txt
