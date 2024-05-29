@@ -134,11 +134,11 @@ def create_kernel(kernel_name:str)->bool:
 
     # 定义要执行的五个步骤，将 kernel_name 作为参数传入
     commands = [
-        f"python -m venv {currentPath}/{kernel_name}",
-        f"source {currentPath}/{kernel_name}/bin/activate",
+        f"python3 -m venv {currentPath}/{kernel_name}",
+        f". {currentPath}/{kernel_name}/bin/activate",
         f"{currentPath}/{kernel_name}/bin/pip install -r requirements.txt",
         f"{currentPath}/{kernel_name}/bin/pip install ./aigbb_functions",
-        f"{currentPath}/{kernel_name}/bin/python -m ipykernel install --name={kernel_name}  --user --display-name 'Python ({kernel_name})'"
+        f"{currentPath}/{kernel_name}/bin/python3 -m ipykernel install --name={kernel_name}  --user --display-name 'Python ({kernel_name})'"
     ]
 
     for command in commands:
@@ -166,7 +166,7 @@ def modifyKernelJsonfileTo(kernel_name:str) -> bool:
     if len(kernelList) == 0:
         return True
     
-    pythonEnvPath = os.path.join(os.getcwd(), kernel_name, 'bin', 'python')
+    pythonEnvPath = os.path.join(os.getcwd(), kernel_name, 'bin', 'python3')
 
     kernelJsonfilePath = kernelList[0]['path'] + "/kernel.json"
 
