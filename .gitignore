@@ -164,10 +164,20 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-
+aigbb_functions_kernel_*
 aigbb_functions_kernel_*/
 
 aigbb_functions_kernel_1
 aigbb_functions_kernel_1/
+
 aigbb_functions_kernel_2
 aigbb_functions_kernel_2/
+
+aigbb_functions_kernel_3
+aigbb_functions_kernel_3/
+
+aigbb_functions_kernel_4
+aigbb_functions_kernel_4/
+
+aigbb_functions_kernel_5
+aigbb_functions_kernel_5/

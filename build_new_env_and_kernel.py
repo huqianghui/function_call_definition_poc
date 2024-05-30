@@ -16,6 +16,8 @@ logging.basicConfig(level=numeric_level)
 
 kernel_prefix="aigbb_functions_kernel"
 
+default_kernel_name = "aigbb_functions_kernel_1"
+
 last_kernel_name = "aigbb_functions_kernel_1"
 
 current_kernel_name = "aigbb_functions_kernel_1"
@@ -72,13 +74,21 @@ def find_kernel(kernel_name) -> List[Dict[str, str]]:
         return json_objects
 
 # build the kernel name and create the kernel
-def build_kernel(lock_timeout :int=15) -> bool:
+def build_kernel(recreateFlg: bool=False,lock_timeout :int=15) -> bool:
     logging.debug("build_kernel...")
+    logging.debug("recreateFlg: %s", recreateFlg)
     logging.debug("lock_timeout: %s", lock_timeout)
 
     global current_kernel_name
     global last_kernel_name
 
+    # check if the kernel is already created, and not neccesarilly to recreate it,then return
+    if not recreateFlg :
+        kernelList = find_kernel(kernel_prefix)
+        if len(kernelList) > 0:
+            return True
+        
+    # else create the kernel, and try to get the lock first.
     lock_filename = "lock_file"
     try:
         # 尝试获取文件锁
@@ -254,8 +264,8 @@ def remove_kernel_by_name(kernel_name:str):
             return False
     return True
 
-# clean the remaining env
-def delete_directories_with_pattern(pattern):
+# clean the remaining env except default
+def delete_directories_with_pattern_execept_default(pattern):
     try:
         # 执行 ls | grep 命令，获取匹配指定模式的目录列表
         result = subprocess.run(f"ls | grep {pattern}", shell=True, capture_output=True, text=True, check=False)
@@ -263,7 +273,7 @@ def delete_directories_with_pattern(pattern):
 
         # 删除匹配到的目录
         for directory in matched_directories:
-            if directory:
+            if directory != default_kernel_name:
                 subprocess.run(["rm", "-rf", directory], check=True)
         
         logging.info(f"Deleted directories matching pattern '{pattern}' successfully")
@@ -271,19 +281,19 @@ def delete_directories_with_pattern(pattern):
         logging.error(f"Failed to delete directories with pattern '{pattern}': {e}")
 
 # remove the remaining python env & kernel
-def remove_all_gbb_env_kernel():
+def remove_all_gbb_env_kernel_except_default():
     logging.debug("remove_all_gbb_env_kernel...")
 
     kernelList = find_kernel(kernel_prefix)
     logging.debug("kernelList: %s", kernelList)
 
     for kernel in kernelList:
-        remove_kernel_by_name(kernel["kernel_name"])
-    
+        if kernel["kernel_name"] != default_kernel_name:
+            remove_kernel_by_name(kernel["kernel_name"])    
     # clean the remaining env
-    delete_directories_with_pattern(kernel_prefix)
+    delete_directories_with_pattern_execept_default(kernel_prefix)
 
 # remove the remaining kernel
-remove_all_gbb_env_kernel()
+#remove_all_gbb_env_kernel_except_default()
 # build the default kernel
-build_kernel()
+#build_kernel()

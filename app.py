@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 import asyncio
 from jupyter_client import KernelManager
-import threading,os
-from build_new_env_and_kernel import get_current_kernel_name,build_kernel
+import os
+from build_new_env_and_kernel import get_current_kernel_name,build_kernel,remove_all_gbb_env_kernel_except_default
 import logging
 from function_export import update_init_py
 
@@ -16,8 +16,8 @@ numeric_level = getattr(logging, log_level.upper(), logging.DEBUG)
 logging.basicConfig(level=numeric_level)
 
 
-# app1 for function call
-app1 = Flask(__name__)
+# app for function call
+app = Flask(__name__)
 
 async def execute_code_in_kernel(code):
     
@@ -49,11 +49,11 @@ async def execute_code_in_kernel(code):
         kc.stop_channels()
         km.shutdown_kernel()
 
-@app1.route('/', methods=['GET'])
+@app.route('/', methods=['GET'])
 def helloApp1():
-    return 'Hello from app1!'
+    return 'Hello from app!'
     
-@app1.route('/execute', methods=['POST'])
+@app.route('/execute', methods=['POST'])
 def execute():
     data = request.get_json()
     code = data.get('code', '')
@@ -67,15 +67,8 @@ def execute():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# app2 for function definition
-app2 = Flask(__name__)
-
-@app2.route('/', methods=['GET'])
-def helloApp2():
-    return 'Hello from app2!'
-
-@app2.route('/register', methods=['POST'])
-def index2():
+@app.route('/register', methods=['POST'])
+def register_function():
     data = request.get_json()
     functionName = data.get('functionName', '')
     assert len(functionName) > 0, 'Function name is required!'
@@ -107,31 +100,18 @@ def index2():
     # Update the __init__.py file
     update_init_py(functionName, functionName)
     
-    buildKernelFld = build_kernel()
+    # Rebuild the kernel
+    buildKernelFld = build_kernel(recreateFlg=True)
+    
     if buildKernelFld:
         return jsonify({'result': 'Function registered successfully!'})
     else:
         return jsonify({'error': 'Function registration failed! Maybe someone is regetering at the same time.Please try later.'}), 500
 
-# start the two apps
-# 定义函数来运行第一个 Flask 应用
-def run_app1():
-    app1.run(host='0.0.0.0',port=8000)
-
-# 定义函数来运行第二个 Flask 应用
-def run_app2():
-    app2.run(host='0.0.0.0',port=8001)
-
 if __name__ == '__main__':
-    # 创建线程来运行两个应用
-    t1 = threading.Thread(target=run_app1)
-
-    t2 = threading.Thread(target=run_app2)
+    # remove the remaining kernel
+    remove_all_gbb_env_kernel_except_default()
+    # build the default kernel
+    build_kernel()
     
-    # 启动线程
-    t1.start()
-    t2.start()
-    
-    # 等待线程完成
-    t1.join()
-    t2.join()
+    app.run(host='0.0.0.0', port=8080)
