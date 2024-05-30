@@ -1,3 +1,5 @@
-numpy==1.26.4
+
+matlib==0.1.2
+hello-hello==1.0.0
 matlib==0.1.2
 hello-hello==1.0.0

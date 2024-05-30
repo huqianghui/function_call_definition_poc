@@ -6,13 +6,13 @@ from build_new_env_and_kernel import get_current_kernel_name,build_kernel
 import logging
 from function_export import update_init_py
 
-# 从环境变量中读取日志级别，默认为 INFO
+# read the log level from the environment variable
 log_level = os.getenv('LOG_LEVEL', 'DEBUG')
 
-# 将日志级别字符串转换为对应的日志级别常量
+# set the log level
 numeric_level = getattr(logging, log_level.upper(), logging.DEBUG)
 
-# 配置日志记录器
+# configure the logging
 logging.basicConfig(level=numeric_level)
 
 
@@ -21,7 +21,7 @@ app1 = Flask(__name__)
 
 async def execute_code_in_kernel(code):
     
-    # 使用预配置的内核（选择最新的内核）
+    # configure the kernel manager
     km = KernelManager(kernel_name=get_current_kernel_name())
     km.start_kernel()
 
@@ -30,11 +30,10 @@ async def execute_code_in_kernel(code):
         kc.start_channels()
         kc.wait_for_ready()
         kc.execute("from aigbb_functions import * \n")
-        # 发送代码执行请求
-        
+        # send the code to the kernel
         msg_id = kc.execute(code)
 
-        # 收集结果
+        # collect the result
         result = ""
         while True:
             msg = kc.get_iopub_msg()
@@ -49,7 +48,6 @@ async def execute_code_in_kernel(code):
     finally:
         kc.stop_channels()
         km.shutdown_kernel()
-
 
 @app1.route('/', methods=['GET'])
 def helloApp1():

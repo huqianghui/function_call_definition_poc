@@ -22,6 +22,8 @@ WORKDIR /app
 # 复制应用程序代码到容器中
 COPY . .
 
+RUN chmod +x ./start.sh
+
 # 安装依赖包
 RUN pip install -r requirements.txt
 
@@ -30,4 +32,4 @@ EXPOSE 8000
 EXPOSE 8001
 
 # 启动应用
-CMD ["sh", "-c", "gunicorn -b 0.0.0.0:8000 app:app1 --workers 4 --threads 4 --preload & gunicorn -b 0.0.0.0:8001 app:app2 --workers 4 --threads 4 --preload"]
+CMD ["./start.sh"]

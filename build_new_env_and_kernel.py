@@ -5,18 +5,18 @@ import fcntl,time
 import os
 import logging
 
-
-# 从环境变量中读取日志级别，默认为 INFO
+# render the log level from environment variable
 log_level = os.getenv('LOG_LEVEL', 'DEBUG')
 
-# 将日志级别字符串转换为对应的日志级别常量
+# set the log level
 numeric_level = getattr(logging, log_level.upper(), logging.DEBUG)
 
-# 配置日志记录器
+# configure the logging
 logging.basicConfig(level=numeric_level)
 
-
 kernel_prefix="aigbb_functions_kernel"
+
+last_kernel_name = "aigbb_functions_kernel_1"
 
 current_kernel_name = "aigbb_functions_kernel_1"
 
@@ -73,11 +73,11 @@ def find_kernel(kernel_name) -> List[Dict[str, str]]:
 
 # build the kernel name and create the kernel
 def build_kernel(lock_timeout :int=15) -> bool:
-
     logging.debug("build_kernel...")
     logging.debug("lock_timeout: %s", lock_timeout)
 
     global current_kernel_name
+    global last_kernel_name
 
     lock_filename = "lock_file"
     try:
@@ -105,13 +105,18 @@ def build_kernel(lock_timeout :int=15) -> bool:
             next_kernel_name = kernel_prefix + "_" + str(len(kernelList) + 1)
             
             createKernelFlg=create_kernel(next_kernel_name)
-            modifyKernelJsonfileTo(next_kernel_name)
-            
-            # update the current_kernel_name if the latest kernel is created successfully
-            if createKernelFlg :
-                logging.info("Update current_kernel_name to %s .",next_kernel_name)
+            validKernelFlg=validate_kernel(next_kernel_name)   
+            modify_kernel_jsonfile(next_kernel_name)
 
+            # update the current_kernel_name if the latest kernel is created successfully
+            if createKernelFlg and validKernelFlg:
+                logging.info("Update current_kernel_name to %s .",next_kernel_name)
+                last_kernel_name = current_kernel_name
                 current_kernel_name = next_kernel_name
+                
+            else:
+                logging.error("Failed to create the kernel %s .",next_kernel_name)
+                return False
     
     except IOError:
         logging.error("Another process is already running. Please try again later.")
@@ -127,7 +132,6 @@ def build_kernel(lock_timeout :int=15) -> bool:
     return True 
     
 def create_kernel(kernel_name:str)->bool:
-
     logging.debug("create_kernel...")
     logging.debug("kernel_name: %s", kernel_name)
     currentPath=  os.getcwd()
@@ -150,15 +154,51 @@ def create_kernel(kernel_name:str)->bool:
             text=True
         )
         stdout, stderr = process.communicate()
+        logging.info(f">>command: {command},")
+        logging.info(f">>stdout: {stdout},")
         if process.returncode != 0:
             logging.error(f"Error executing command: {command}")
             logging.error(f"Error message: {stderr}")
             return False
     return True
 
-def modifyKernelJsonfileTo(kernel_name:str) -> bool:
+def validate_kernel(kernel_name:str)->bool:
+    logging.debug("validate_kernel...")
+    logging.debug("kernel_name: %s", kernel_name)
+
+    script_path = "./validation/env_validation.sh"
+    currentPath =  os.getcwd()
+    # override evn_validation.sh
+    with open(script_path, "w") as f:
+        f.write(f"{currentPath}/{kernel_name}/bin/python3  {currentPath}/validation/module_validation.py")
     
-    logging.debug("modifyKernelJsonfileTo...")
+     # set the script executable
+    os.chmod(script_path, 0o755)
+
+    commands = [
+        f". {currentPath}/{kernel_name}/bin/activate",
+        f"{currentPath}/validation/env_validation.sh"
+    ]
+
+    for command in commands:
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        stdout, stderr = process.communicate()
+        logging.info(f">>command: {command},")
+        logging.info(f">>stdout: {stdout},")
+        if process.returncode != 0:
+            logging.error(f"Error executing command: {command}")
+            logging.error(f"Error message: {stderr}")
+            return False
+    return True
+
+def modify_kernel_jsonfile(kernel_name:str) -> bool:
+    logging.debug("modify_kernel_jsonfile...")
     logging.debug("kernel_name: %s", kernel_name)
 
     kernelList = find_kernel(kernel_name)
@@ -189,7 +229,6 @@ def remove_kernel_by_name(kernel_name:str):
     logging.debug("remove_kernel_by_name...")
     logging.debug("kernel_name: %s", kernel_name)
 
-
     # 定义要执行的两个步骤，将 kernel_name 作为参数传入
     commands = [
         f"jupyter kernelspec remove -f {kernel_name} -y",
@@ -206,6 +245,9 @@ def remove_kernel_by_name(kernel_name:str):
             text=True
         )
         stdout, stderr = process.communicate()
+        logging.info(f">>command: {command},")
+        logging.info(f">>stdout: {stdout},")
+
         if process.returncode != 0:
             logging.error(f"Error executing command: {command}")
             logging.error(f"Error message: {stderr}")
@@ -224,10 +266,9 @@ def delete_directories_with_pattern(pattern):
             if directory:
                 subprocess.run(["rm", "-rf", directory], check=True)
         
-        print(f"Deleted directories matching pattern '{pattern}' successfully")
+        logging.info(f"Deleted directories matching pattern '{pattern}' successfully")
     except subprocess.CalledProcessError as e:
-        print(f"Failed to delete directories with pattern '{pattern}': {e}")
-
+        logging.error(f"Failed to delete directories with pattern '{pattern}': {e}")
 
 # remove the remaining python env & kernel
 def remove_all_gbb_env_kernel():
