@@ -76,7 +76,18 @@ def register_function():
     functionScript = data.get('functionScript', '')
     assert len(functionScript) > 0, 'Function name is required!'
 
+    # get the required packages
     packagesRequired = data.get('packages', '')
+
+    # get the required env variables
+    envVariables = data.get('envVariables', '')
+    env_vars_str=""
+    if len(envVariables) > 0:
+        # get all of the env variables
+        env_vars_str = "import os\n"
+        for key, value in envVariables.items():
+            # add the env variables to the string
+            env_vars_str += f"os.environ['{key}'] = '{value}'\n"
 
     # Create a directory to store the function
     directory = './aigbb_functions'
@@ -84,7 +95,7 @@ def register_function():
     if not os.path.exists(directory):
         os.makedirs(directory)
     with open(os.path.join(directory, f'{functionName}.py'), 'w') as file:
-        file.write(functionScript)
+        file.write(env_vars_str + functionScript)
 
     # Add the required packages to the extra-requirements.txt file
     if len(packagesRequired) >0 :

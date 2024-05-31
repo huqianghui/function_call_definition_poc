@@ -85,7 +85,8 @@ def build_kernel(recreateFlg: bool=False,lock_timeout :int=15) -> bool:
     # check if the kernel is already created, and not neccesarilly to recreate it,then return
     if not recreateFlg :
         kernelList = find_kernel(kernel_prefix)
-        if len(kernelList) > 0:
+        matchedDir = get_directories_with_pattern(kernel_prefix)
+        if len(kernelList) > 0 and len(matchedDir) > 0:
             return True
         
     # else create the kernel, and try to get the lock first.
@@ -264,12 +265,22 @@ def remove_kernel_by_name(kernel_name:str):
             return False
     return True
 
-# clean the remaining env except default
-def delete_directories_with_pattern_execept_default(pattern):
+# get directories with pattern
+def get_directories_with_pattern(pattern:str)->List[str]:
     try:
-        # 执行 ls | grep 命令，获取匹配指定模式的目录列表
-        result = subprocess.run(f"ls | grep {pattern}", shell=True, capture_output=True, text=True, check=False)
+        # execute ls | grep command to get the list of directories matching the specified pattern
+        result = subprocess.run(f"ls | grep {pattern}", shell=True, capture_output=True, text=True, check=True)
         matched_directories = result.stdout.split('\n')
+        return matched_directories
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to get directories with pattern '{pattern}': {e}")
+        return []
+
+# clean the remaining env except default
+def delete_directories_with_pattern_execept_default(pattern:str):
+    try:
+        # get the list of directories matching the specified pattern
+        matched_directories = get_directories_with_pattern(pattern)
 
         # 删除匹配到的目录
         for directory in matched_directories:
