@@ -9,4 +9,5 @@ def on_starting(server):
     # 你的初始化代码
 
 bind = "0.0.0.0:8080"
+loglevel = 'debug'
 workers = 4

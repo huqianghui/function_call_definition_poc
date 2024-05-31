@@ -22,14 +22,11 @@ WORKDIR /app
 # 复制应用程序代码到容器中
 COPY . .
 
-RUN chmod +x ./start.sh
-
 # 安装依赖包
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir  -r requirements.txt
 
-# 暴露两个端口
-EXPOSE 8000
-EXPOSE 8001
+# 暴露端口
+EXPOSE 8080
 
 # 启动应用
-CMD ["./start.sh"]
+CMD ["python3", "app.py"]
