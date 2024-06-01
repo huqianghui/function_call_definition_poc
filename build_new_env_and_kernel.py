@@ -31,6 +31,10 @@ def find_kernel(kernel_name) -> List[Dict[str, str]]:
     logging.debug("find_kernel...")
     logging.debug("kernel_name: %s", kernel_name)
 
+    # 设置环境变量
+    env = os.environ.copy()
+    env["JUPYTER_PATH"] = os.getcwd()+"/share/jupyter"
+
     # 使用 subprocess.Popen 执行 `jupyter kernelspec list` 并将输出传递给 grep
     process_jupyter = subprocess.Popen(
         ["jupyter", "kernelspec", "list"],
@@ -153,7 +157,7 @@ def create_kernel(kernel_name:str)->bool:
         f". {currentPath}/{kernel_name}/bin/activate",
         f"{currentPath}/{kernel_name}/bin/pip install -r requirements.txt",
         f"{currentPath}/{kernel_name}/bin/pip install ./aigbb_functions",
-        f"{currentPath}/{kernel_name}/bin/python3 -m ipykernel install --name={kernel_name}  --user --display-name 'Python ({kernel_name})'"
+        f"{currentPath}/{kernel_name}/bin/python3 -m ipykernel install --prefix  {currentPath} --name={kernel_name} --display-name 'Python ({kernel_name})'"
     ]
 
     for command in commands:
