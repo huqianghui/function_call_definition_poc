@@ -32,8 +32,7 @@ def find_kernel(kernel_name) -> List[Dict[str, str]]:
     logging.debug("kernel_name: %s", kernel_name)
 
     # 设置环境变量
-    env = os.environ.copy()
-    env["JUPYTER_PATH"] = os.getcwd()+"/share/jupyter"
+    os.environ["JUPYTER_PATH"] = os.getcwd()+"/share/jupyter"
 
     # 使用 subprocess.Popen 执行 `jupyter kernelspec list` 并将输出传递给 grep
     process_jupyter = subprocess.Popen(
@@ -270,10 +269,10 @@ def remove_kernel_by_name(kernel_name:str):
     return True
 
 # get directories with pattern
-def get_directories_with_pattern(pattern:str)->List[str]:
+def get_directories_with_pattern(pattern:str,directory:str=".")->List[str]:
     try:
         # execute ls | grep command to get the list of directories matching the specified pattern
-        result = subprocess.run(f"ls | grep {pattern}", shell=True, capture_output=True, text=True, check=True)
+        result = subprocess.run(f"ls {directory} | grep {pattern}", shell=True, capture_output=True, text=True, check=True)
         matched_directories = result.stdout.split('\n')
         return matched_directories
     except subprocess.CalledProcessError as e:
@@ -281,10 +280,10 @@ def get_directories_with_pattern(pattern:str)->List[str]:
         return []
 
 # clean the remaining env except default
-def delete_directories_with_pattern_execept_default(pattern:str):
+def delete_directories_with_pattern_execept_default(pattern:str,directory:str="."):
     try:
         # get the list of directories matching the specified pattern
-        matched_directories = get_directories_with_pattern(pattern)
+        matched_directories = get_directories_with_pattern(pattern, directory)
 
         # 删除匹配到的目录
         for directory in matched_directories:
@@ -304,7 +303,10 @@ def remove_all_gbb_env_kernel_except_default():
 
     for kernel in kernelList:
         if kernel["kernel_name"] != default_kernel_name:
-            remove_kernel_by_name(kernel["kernel_name"])    
+            remove_kernel_by_name(kernel["kernel_name"])
+
+    # clean the remaining kernel
+    delete_directories_with_pattern_execept_default(kernel_prefix,"./share/juperter/kernels")
     # clean the remaining env
     delete_directories_with_pattern_execept_default(kernel_prefix)
 

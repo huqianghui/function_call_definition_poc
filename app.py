@@ -19,9 +19,10 @@ logging.basicConfig(level=numeric_level)
 # app for function call
 app = Flask(__name__)
 
-async def execute_code_in_kernel(code):
+def execute_code_in_kernel(code):
     
     # configure the kernel manager
+    os.environ["JUPYTER_PATH"] = os.getcwd()+"/share/jupyter"
     km = KernelManager(kernel_name=get_current_kernel_name())
     km.start_kernel()
 
@@ -44,6 +45,12 @@ async def execute_code_in_kernel(code):
                 elif msg['msg_type'] == 'error':
                     result = '\n'.join(msg['content']['traceback'])
                     break
+                elif msg['msg_type'] == 'stream':
+                    print(">>kernel execution stream: " + msg['content']['text'])
+                elif msg['msg_type'] == 'status':
+                    execution_state = msg['content']['execution_state']
+                    if execution_state == 'idle':
+                        break
         return result
     finally:
         kc.stop_channels()
@@ -62,7 +69,7 @@ def execute():
         return jsonify({'error': 'No code provided'}), 400
 
     try:
-        result =asyncio.run(execute_code_in_kernel(code)) 
+        result =execute_code_in_kernel(code)
         return jsonify({'result': result})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
