@@ -35,6 +35,8 @@ def execute_code_in_kernel(code):
         msg_id = kc.execute(code)
 
         # collect the result
+        output = []
+        error = ""
         result = ""
         while True:
             msg = kc.get_iopub_msg()
@@ -43,15 +45,16 @@ def execute_code_in_kernel(code):
                     result = msg['content']['data']['text/plain']
                     break
                 elif msg['msg_type'] == 'error':
-                    result = '\n'.join(msg['content']['traceback'])
+                    error = '\n'.join(msg['content']['traceback'])
                     break
                 elif msg['msg_type'] == 'stream':
-                    print(">>kernel execution stream: " + msg['content']['text'])
+                    output.append(msg['content']['text'])
                 elif msg['msg_type'] == 'status':
                     execution_state = msg['content']['execution_state']
                     if execution_state == 'idle':
                         break
-        return result
+        
+        return {'output': ''.join(output),'result': result,'error': error}
     finally:
         kc.stop_channels()
         km.shutdown_kernel()
@@ -70,7 +73,7 @@ def execute():
 
     try:
         result =execute_code_in_kernel(code)
-        return jsonify({'result': result})
+        return result
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
