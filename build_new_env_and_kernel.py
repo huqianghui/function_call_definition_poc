@@ -54,7 +54,7 @@ def find_kernel(kernel_name) -> List[Dict[str, str]]:
     process_jupyter.stdout.close()
     
     # 捕获 grep 的输出和错误
-    output, error = process_grep.communicate()
+    output, error = process_grep.communicate(timeout=30)
     
     # 将每行转换为 JSON 对象，并放入数组中
     json_objects = []
@@ -167,7 +167,7 @@ def create_kernel(kernel_name:str)->bool:
             stderr=subprocess.PIPE,
             text=True
         )
-        stdout, stderr = process.communicate()
+        stdout, stderr = process.communicate(timeout=300)
         logging.info(f">>command: {command},")
         logging.info(f">>stdout: {stdout},")
         if process.returncode != 0:
@@ -202,7 +202,7 @@ def validate_kernel(kernel_name:str)->bool:
             stderr=subprocess.PIPE,
             text=True
         )
-        stdout, stderr = process.communicate()
+        stdout, stderr = process.communicate(timeout=30)
         logging.info(f">>command: {command},")
         logging.info(f">>stdout: {stdout},")
         if process.returncode != 0:
@@ -258,7 +258,7 @@ def remove_kernel_by_name(kernel_name:str):
             stderr=subprocess.PIPE,
             text=True
         )
-        stdout, stderr = process.communicate()
+        stdout, stderr = process.communicate(timeout=30)
         logging.info(f">>command: {command},")
         logging.info(f">>stdout: {stdout},")
 
