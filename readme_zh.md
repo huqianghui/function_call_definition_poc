@@ -43,6 +43,13 @@ sequenceDiagram
     Application-->>User: Return result to user
 ```
 
+***
+支持的模型
+并非所有模型版本都经过函数调用数据的训练。以下模型支持函数调用：gpt-4o、gpt-4o-2024-05-13、gpt-4-turbo、gpt-4-turbo-2024-04-09、gpt-4-turbo-preview、gpt-4-0125-preview、gpt-4-1106-preview、gpt-4、gpt-4-0613、gpt-3.5-turbo、gpt-3.5-turbo-0125、gpt-3.5-turbo-1106 和 gpt-3.5-turbo-0613。
+
+此外，以下模型支持并行函数调用：gpt-4o、gpt-4o-2024-05-13、gpt-4-turbo、gpt-4-turbo-2024-04-09、gpt-4-turbo-preview、gpt-4-0125-preview、gpt-4-1106-preview、gpt-3.5-turbo-0125 和 gpt-3.5-turbo-1106。
+***
+
 
 1. 分成两个requirements.txt文件。第一个来管理本身的依赖和一些默认的依赖。第二个管理通过function call新引入的依赖
 

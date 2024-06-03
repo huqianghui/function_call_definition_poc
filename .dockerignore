@@ -1,0 +1,7 @@
+__pycache__/
+.devcontainer/
+.github/
+.venv/
+.vscode/
+share/
+**/aigbb_function_kernel*/
