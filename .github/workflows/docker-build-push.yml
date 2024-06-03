@@ -30,7 +30,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/your-image-name:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/aigbb_function_call:latest
 
     - name: Log out from Docker Hub
       run: docker logout
